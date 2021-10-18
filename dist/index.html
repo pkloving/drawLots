@@ -1,0 +1,100 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<meta charset="utf-8">
+<style type="text/css">
+body{
+font-size:100px;
+text-align:center;
+}
+span{
+  font-size: 16px;
+}
+button{
+width:200px;
+height:100px;
+font-size:50px;
+}
+</style>
+<TITLE>抽签网页版</TITLE>
+<SCRIPT LANGUAGE="JavaScript">
+
+
+var names = [];
+fetch('/total', {
+  headers: {
+    'content-type': 'application/json'
+  },
+  method: 'get'
+}).then(res => {
+  return res.json()
+}).then(val => {
+  names = val 
+})
+
+var games = ["马尼拉", "吹牛", "卡坦岛"]
+var name;
+var index = -1;
+var time;
+var user = localStorage.getItem('u')
+var who = ''
+function begin(){
+if (user) {
+  document.getElementById("btnBegin").disabled = true;
+  document.getElementById("result").innerHTML = user;
+} else {
+  who = document.getElementById("who").value
+  if (!who) {
+    alert('请填写姓名~')
+  } else {
+    document.getElementById("btnBegin").disabled = true;
+    chouqian();
+  }  
+}
+
+}
+function chouqian(){
+if(names.length > 0){
+index = Math.floor(Math.random()*1000 % names.length);
+var str = names[index]
+document.getElementById("result").innerHTML = str;
+time = window.setTimeout(chouqian,2);
+}else{
+document.getElementById("result").innerHTML = "~结束~";
+}
+}
+function end(){
+if (time){
+  window.clearTimeout(time);
+  time = null;
+  fetch('/result?name='+who, {
+    headers: {
+      'content-type': 'application/text'
+    },
+    method: 'get'
+  }).then(res => {
+    return res.text()
+  }).then(val => {
+    console.log(val)
+    localStorage.setItem('u', val)
+    document.getElementById("result").innerHTML = val;
+  })
+}
+}
+</SCRIPT>
+</HEAD>
+
+<BODY>
+
+<div>
+<div>抽签</div>
+<div>
+<span>姓名</span>
+<input id="who" style="width:120px;"/>
+</div>
+<button id="btnBegin" ONCLICK="begin();">开始</button>
+<button id="btnEnd" ONCLICK="end();">结束</button>
+<h1 id="result" style="color:blue;">^_^</h1>
+</div>
+</BODY>
+</HTML>
